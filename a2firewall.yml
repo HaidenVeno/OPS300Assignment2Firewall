@@ -1,0 +1,36 @@
+---
+- name: Configure NFTables Firewall
+  hosts: 192.168.28.1
+  become: yes
+  
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Ensure nftables is at latest version
+      apt:
+        name: nftables
+        state: latest
+        
+    - name: Enable and start nftables service
+      service:
+        name: nftables
+        state: started
+        enabled: yes
+        
+    - name: Copy nftables configuration
+      copy:
+        src: nftables.conf
+        dest: /etc/nftables.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart nftables
+      
+  handlers:
+    - name: restart nftables
+      service:
+        name: nftables
+        state: restarted
